@@ -5,7 +5,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.provider.Settings
 import java.util.Calendar
 
 class AlarmScheduler(
@@ -17,14 +16,24 @@ class AlarmScheduler(
             Context.ALARM_SERVICE
         ) as AlarmManager
 
+
+    /*
+     * =========================
+     * SCHEDULE ALARM
+     * =========================
+     */
     fun schedule(
         alarm: AlarmItem
     ) {
 
         if (!alarm.enabled) return
 
+
         val triggerTime =
-            calculateNextTriggerTime(alarm)
+            calculateNextTriggerTime(
+                alarm
+            )
+
 
         val intent =
             Intent(
@@ -48,15 +57,16 @@ class AlarmScheduler(
                 )
 
                 putExtra(
-                    "extra_hour",
+                    AlarmReceiver.EXTRA_HOUR,
                     alarm.hour
                 )
 
                 putExtra(
-                    "extra_minute",
+                    AlarmReceiver.EXTRA_MINUTE,
                     alarm.minute
                 )
             }
+
 
         val pendingIntent =
             PendingIntent.getBroadcast(
@@ -67,6 +77,24 @@ class AlarmScheduler(
                         PendingIntent.FLAG_IMMUTABLE
             )
 
+
+        scheduleExact(
+            triggerTime,
+            pendingIntent
+        )
+    }
+
+
+    /*
+     * =========================
+     * EXACT ALARM SCHEDULING
+     * =========================
+     */
+    private fun scheduleExact(
+        triggerTime: Long,
+        pendingIntent: PendingIntent
+    ) {
+
         try {
 
             if (
@@ -75,8 +103,7 @@ class AlarmScheduler(
             ) {
 
                 if (
-                    alarmManager
-                        .canScheduleExactAlarms()
+                    alarmManager.canScheduleExactAlarms()
                 ) {
 
                     alarmManager.setExactAndAllowWhileIdle(
@@ -88,8 +115,8 @@ class AlarmScheduler(
                 } else {
 
                     /*
-                     * Fallback when exact-alarm
-                     * permission is not available.
+                     * Fallback if exact alarm
+                     * permission is unavailable.
                      */
                     alarmManager.setAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
@@ -109,9 +136,6 @@ class AlarmScheduler(
 
         } catch (_: SecurityException) {
 
-            /*
-             * Safe fallback.
-             */
             alarmManager.setAndAllowWhileIdle(
                 AlarmManager.RTC_WAKEUP,
                 triggerTime,
@@ -120,6 +144,12 @@ class AlarmScheduler(
         }
     }
 
+
+    /*
+     * =========================
+     * CANCEL ALARM
+     * =========================
+     */
     fun cancel(
         alarm: AlarmItem
     ) {
@@ -130,6 +160,7 @@ class AlarmScheduler(
                 AlarmReceiver::class.java
             )
 
+
         val pendingIntent =
             PendingIntent.getBroadcast(
                 context,
@@ -139,6 +170,7 @@ class AlarmScheduler(
                         PendingIntent.FLAG_IMMUTABLE
             )
 
+
         alarmManager.cancel(
             pendingIntent
         )
@@ -146,6 +178,12 @@ class AlarmScheduler(
         pendingIntent.cancel()
     }
 
+
+    /*
+     * =========================
+     * CALCULATE NEXT TRIGGER
+     * =========================
+     */
     private fun calculateNextTriggerTime(
         alarm: AlarmItem
     ): Long {
@@ -153,39 +191,44 @@ class AlarmScheduler(
         val now =
             Calendar.getInstance()
 
-        val target =
-            Calendar.getInstance()
 
         /*
-         * Device's current timezone.
-         */
-        target.set(
-            Calendar.HOUR_OF_DAY,
-            alarm.hour
-        )
-
-        target.set(
-            Calendar.MINUTE,
-            alarm.minute
-        )
-
-        target.set(
-            Calendar.SECOND,
-            0
-        )
-
-        target.set(
-            Calendar.MILLISECOND,
-            0
-        )
-
-        /*
-         * One-time alarm.
+         * =========================
+         * ONCE ALARM
+         * =========================
          */
         if (
             alarm.repeatDays.isEmpty()
         ) {
 
+            val target =
+                Calendar.getInstance()
+
+            target.set(
+                Calendar.HOUR_OF_DAY,
+                alarm.hour
+            )
+
+            target.set(
+                Calendar.MINUTE,
+                alarm.minute
+            )
+
+            target.set(
+                Calendar.SECOND,
+                0
+            )
+
+            target.set(
+                Calendar.MILLISECOND,
+                0
+            )
+
+
+            /*
+             * If today's time has already
+             * passed, schedule tomorrow.
+             */
             if (
                 target.timeInMillis <=
                 now.timeInMillis
@@ -197,34 +240,61 @@ class AlarmScheduler(
                 )
             }
 
+
             return target.timeInMillis
         }
 
+
         /*
-         * Repeating alarm.
+         * =========================
+         * REPEATING ALARM
+         * =========================
+         *
+         * Check today + next 7 days
+         * and return the first selected
+         * day that is still in the future.
          */
         for (
-        daysAhead in 0..6
+        daysAhead in 0..7
         ) {
 
             val candidate =
                 Calendar.getInstance()
 
-            candidate.timeInMillis =
-                target.timeInMillis
 
             candidate.add(
                 Calendar.DAY_OF_YEAR,
                 daysAhead
             )
 
-            val calendarDay =
-                candidate.get(
-                    Calendar.DAY_OF_WEEK
-                )
+
+            candidate.set(
+                Calendar.HOUR_OF_DAY,
+                alarm.hour
+            )
+
+            candidate.set(
+                Calendar.MINUTE,
+                alarm.minute
+            )
+
+            candidate.set(
+                Calendar.SECOND,
+                0
+            )
+
+            candidate.set(
+                Calendar.MILLISECOND,
+                0
+            )
+
 
             val modelDay =
-                when (calendarDay) {
+                when (
+                    candidate.get(
+                        Calendar.DAY_OF_WEEK
+                    )
+                ) {
 
                     Calendar.MONDAY -> 1
                     Calendar.TUESDAY -> 2
@@ -237,6 +307,11 @@ class AlarmScheduler(
                     else -> 0
                 }
 
+
+            /*
+             * Selected repeat day
+             * and time must be future.
+             */
             if (
                 modelDay in alarm.repeatDays &&
                 candidate.timeInMillis >
@@ -247,11 +322,39 @@ class AlarmScheduler(
             }
         }
 
-        target.add(
+
+        /*
+         * Safety fallback:
+         * one week later.
+         */
+        val fallback =
+            Calendar.getInstance()
+
+        fallback.add(
             Calendar.DAY_OF_YEAR,
             7
         )
 
-        return target.timeInMillis
+        fallback.set(
+            Calendar.HOUR_OF_DAY,
+            alarm.hour
+        )
+
+        fallback.set(
+            Calendar.MINUTE,
+            alarm.minute
+        )
+
+        fallback.set(
+            Calendar.SECOND,
+            0
+        )
+
+        fallback.set(
+            Calendar.MILLISECOND,
+            0
+        )
+
+        return fallback.timeInMillis
     }
 }

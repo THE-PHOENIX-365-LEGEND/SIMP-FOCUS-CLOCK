@@ -5,6 +5,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -26,14 +28,31 @@ class TimerNotificationManager(
     }
 
     init {
+
         createNotificationChannel()
     }
 
     private fun createNotificationChannel() {
 
-        if (Build.VERSION.SDK_INT >=
+        if (
+            Build.VERSION.SDK_INT >=
             Build.VERSION_CODES.O
         ) {
+
+            val soundUri =
+                RingtoneManager.getDefaultUri(
+                    RingtoneManager.TYPE_NOTIFICATION
+                )
+
+            val audioAttributes =
+                AudioAttributes.Builder()
+                    .setUsage(
+                        AudioAttributes.USAGE_NOTIFICATION
+                    )
+                    .setContentType(
+                        AudioAttributes.CONTENT_TYPE_SONIFICATION
+                    )
+                    .build()
 
             val channel =
                 NotificationChannel(
@@ -44,6 +63,11 @@ class TimerNotificationManager(
 
                     description =
                         "Notifications for completed timers"
+
+                    setSound(
+                        soundUri,
+                        audioAttributes
+                    )
 
                     enableVibration(true)
                 }
@@ -78,6 +102,7 @@ class TimerNotificationManager(
                 permission !=
                 PackageManager.PERMISSION_GRANTED
             ) {
+
                 return
             }
         }
@@ -100,12 +125,9 @@ class TimerNotificationManager(
                     NotificationCompat.PRIORITY_HIGH
                 )
                 .setCategory(
-                    NotificationCompat.CATEGORY_ALARM
+                    NotificationCompat.CATEGORY_EVENT
                 )
                 .setAutoCancel(true)
-                .setDefaults(
-                    NotificationCompat.DEFAULT_ALL
-                )
                 .build()
 
         NotificationManagerCompat

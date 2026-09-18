@@ -3,6 +3,7 @@ package com.example.simp_focus_clock
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Toast
@@ -86,6 +87,7 @@ class MainActivity : ComponentActivity() {
     ) {
         super.onCreate(savedInstanceState)
 
+
         setContent {
 
             SIMPFOCUSCLOCKTheme {
@@ -95,13 +97,15 @@ class MainActivity : ComponentActivity() {
 
 
                 /*
-                 * Notification permission
+                 * =========================
+                 * NOTIFICATION PERMISSION
+                 * =========================
                  */
                 LaunchedEffect(Unit) {
 
                     if (
-                        android.os.Build.VERSION.SDK_INT >=
-                        android.os.Build.VERSION_CODES.TIRAMISU
+                        Build.VERSION.SDK_INT >=
+                        Build.VERSION_CODES.TIRAMISU
                     ) {
 
                         val permissionGranted =
@@ -110,6 +114,7 @@ class MainActivity : ComponentActivity() {
                                 Manifest.permission.POST_NOTIFICATIONS
                             ) ==
                                     PackageManager.PERMISSION_GRANTED
+
 
                         if (!permissionGranted) {
 
@@ -122,7 +127,9 @@ class MainActivity : ComponentActivity() {
 
 
                 /*
-                 * Current bottom navigation screen
+                 * =========================
+                 * CURRENT BOTTOM NAV SCREEN
+                 * =========================
                  */
                 var selectedScreenIndex by remember {
 
@@ -131,7 +138,9 @@ class MainActivity : ComponentActivity() {
 
 
                 /*
-                 * App selector visibility
+                 * =========================
+                 * APP SELECTOR VISIBILITY
+                 * =========================
                  */
                 var showAppSelector by remember {
 
@@ -147,6 +156,7 @@ class MainActivity : ComponentActivity() {
                 val alarmViewModel:
                         AlarmViewModel =
                     viewModel()
+
 
                 alarmViewModel.initialize(
                     applicationContext
@@ -171,6 +181,7 @@ class MainActivity : ComponentActivity() {
                 val timerViewModel:
                         TimerViewModel =
                     viewModel()
+
 
                 timerViewModel.initialize(
                     applicationContext
@@ -203,7 +214,9 @@ class MainActivity : ComponentActivity() {
 
 
                 /*
-                 * App selector repository
+                 * =========================
+                 * APP SELECTOR REPOSITORY
+                 * =========================
                  */
                 val appSelectorRepository =
                     remember {
@@ -215,7 +228,9 @@ class MainActivity : ComponentActivity() {
 
 
                 /*
-                 * Focus state
+                 * =========================
+                 * FOCUS STATE
+                 * =========================
                  */
                 val focusState by
                 focusViewModel
@@ -224,7 +239,9 @@ class MainActivity : ComponentActivity() {
 
 
                 /*
-                 * Focus remaining time
+                 * =========================
+                 * FOCUS REMAINING TIME
+                 * =========================
                  */
                 val remainingMillis by
                 focusViewModel
@@ -233,7 +250,9 @@ class MainActivity : ComponentActivity() {
 
 
                 /*
-                 * Emergency code
+                 * =========================
+                 * EMERGENCY CODE
+                 * =========================
                  */
                 val emergencyCode by
                 focusViewModel
@@ -242,7 +261,9 @@ class MainActivity : ComponentActivity() {
 
 
                 /*
-                 * Current screen
+                 * =========================
+                 * CURRENT SCREEN
+                 * =========================
                  */
                 val currentScreen =
                     MainScreen.entries[
@@ -251,7 +272,9 @@ class MainActivity : ComponentActivity() {
 
 
                 /*
-                 * Back button when App Selector is open
+                 * =========================
+                 * BACK BUTTON
+                 * =========================
                  */
                 BackHandler(
                     enabled = showAppSelector
@@ -283,8 +306,9 @@ class MainActivity : ComponentActivity() {
 
                             NavigationBar {
 
+
                                 /*
-                                 * Alarm
+                                 * ALARM
                                  */
                                 NavigationBarItem(
 
@@ -294,8 +318,7 @@ class MainActivity : ComponentActivity() {
 
                                     onClick = {
 
-                                        selectedScreenIndex =
-                                            0
+                                        selectedScreenIndex = 0
                                     },
 
                                     icon = {
@@ -311,7 +334,7 @@ class MainActivity : ComponentActivity() {
 
 
                                 /*
-                                 * Stopwatch
+                                 * STOPWATCH
                                  */
                                 NavigationBarItem(
 
@@ -321,8 +344,7 @@ class MainActivity : ComponentActivity() {
 
                                     onClick = {
 
-                                        selectedScreenIndex =
-                                            1
+                                        selectedScreenIndex = 1
                                     },
 
                                     icon = {
@@ -338,7 +360,7 @@ class MainActivity : ComponentActivity() {
 
 
                                 /*
-                                 * Timer
+                                 * TIMER
                                  */
                                 NavigationBarItem(
 
@@ -348,8 +370,7 @@ class MainActivity : ComponentActivity() {
 
                                     onClick = {
 
-                                        selectedScreenIndex =
-                                            2
+                                        selectedScreenIndex = 2
                                     },
 
                                     icon = {
@@ -365,7 +386,7 @@ class MainActivity : ComponentActivity() {
 
 
                                 /*
-                                 * Focus
+                                 * FOCUS
                                  */
                                 NavigationBarItem(
 
@@ -375,8 +396,7 @@ class MainActivity : ComponentActivity() {
 
                                     onClick = {
 
-                                        selectedScreenIndex =
-                                            3
+                                        selectedScreenIndex = 3
                                     },
 
                                     icon = {
@@ -396,9 +416,6 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
 
 
-                    /*
-                     * Use Scaffold padding
-                     */
                     Box(
 
                         modifier =
@@ -447,9 +464,7 @@ class MainActivity : ComponentActivity() {
 
 
                                 /*
-                                 * -------------------------
                                  * ALARM
-                                 * -------------------------
                                  */
                                 MainScreen.ALARM -> {
 
@@ -462,9 +477,7 @@ class MainActivity : ComponentActivity() {
 
 
                                 /*
-                                 * -------------------------
                                  * STOPWATCH
-                                 * -------------------------
                                  */
                                 MainScreen.STOPWATCH -> {
 
@@ -477,9 +490,7 @@ class MainActivity : ComponentActivity() {
 
 
                                 /*
-                                 * -------------------------
                                  * TIMER
-                                 * -------------------------
                                  */
                                 MainScreen.TIMER -> {
 
@@ -492,9 +503,7 @@ class MainActivity : ComponentActivity() {
 
 
                                 /*
-                                 * -------------------------
                                  * FOCUS
-                                 * -------------------------
                                  */
                                 MainScreen.FOCUS -> {
 
@@ -529,7 +538,7 @@ class MainActivity : ComponentActivity() {
 
 
                                         /*
-                                         * Select app
+                                         * SELECT APP
                                          */
                                         onSelectApp = {
 
@@ -539,7 +548,7 @@ class MainActivity : ComponentActivity() {
 
 
                                         /*
-                                         * Focus duration
+                                         * FOCUS DURATION
                                          */
                                         onFocusDurationChanged = {
 
@@ -553,7 +562,7 @@ class MainActivity : ComponentActivity() {
 
 
                                         /*
-                                         * Cooldown duration
+                                         * COOLDOWN DURATION
                                          */
                                         onCooldownDurationChanged = {
 
@@ -567,7 +576,7 @@ class MainActivity : ComponentActivity() {
 
 
                                         /*
-                                         * Start Focus
+                                         * START FOCUS
                                          */
                                         onStartFocus = {
 
@@ -575,7 +584,7 @@ class MainActivity : ComponentActivity() {
                                                 .startFocus(
 
                                                     onStarted = {
-                                                        // Started
+                                                        // Focus started
                                                     },
 
                                                     onError = {
@@ -593,7 +602,7 @@ class MainActivity : ComponentActivity() {
 
 
                                         /*
-                                         * Emergency unlock
+                                         * EMERGENCY UNLOCK
                                          */
                                         onEmergencyUnlockForSession = {
 
@@ -631,15 +640,14 @@ class MainActivity : ComponentActivity() {
 
 
                                         /*
-                                         * Accessibility settings
+                                         * ACCESSIBILITY SETTINGS
                                          */
                                         onOpenAccessibilitySettings = {
 
                                             context.startActivity(
 
                                                 Intent(
-                                                    Settings
-                                                        .ACTION_ACCESSIBILITY_SETTINGS
+                                                    Settings.ACTION_ACCESSIBILITY_SETTINGS
                                                 )
                                             )
                                         }

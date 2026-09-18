@@ -1,36 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Allow Android to expose launcher applications -->
+    <!-- ========================= -->
+    <!-- APP QUERY -->
+    <!-- ========================= -->
+
     <queries>
 
         <intent>
+
             <action
                 android:name="android.intent.action.MAIN" />
 
             <category
                 android:name="android.intent.category.LAUNCHER" />
+
         </intent>
 
     </queries>
 
 
+    <!-- ========================= -->
+    <!-- PERMISSIONS -->
+    <!-- ========================= -->
+
+    <!-- Focus overlay -->
     <uses-permission
         android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
+    <!-- Notifications -->
     <uses-permission
         android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Restore alarms after reboot -->
     <uses-permission
         android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <!-- Exact alarms -->
     <uses-permission
         android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
+    <!-- Foreground service -->
     <uses-permission
         android:name="android.permission.FOREGROUND_SERVICE" />
 
+    <!-- Alarm sound foreground service -->
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+    <!-- Full screen alarm -->
+    <uses-permission
+        android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+
+
+    <!-- ========================= -->
+    <!-- APPLICATION -->
+    <!-- ========================= -->
 
     <application
         android:allowBackup="true"
@@ -40,6 +67,10 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 
+
+        <!-- ========================= -->
+        <!-- MAIN ACTIVITY -->
+        <!-- ========================= -->
 
         <activity
             android:name=".MainActivity"
@@ -58,13 +89,59 @@
         </activity>
 
 
-        <!-- Alarm Receiver -->
+        <!-- ========================= -->
+        <!-- FULL SCREEN ALARM -->
+        <!-- ========================= -->
+
+        <activity
+            android:name=".alarm.FullScreenAlarmActivity"
+            android:exported="false"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true" />
+
+
+        <!-- ========================= -->
+        <!-- ALARM SOUND SERVICE -->
+        <!-- ========================= -->
+
+        <service
+            android:name=".alarm.AlarmSoundService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
+
+        <!-- ========================= -->
+        <!-- ALARM RECEIVER -->
+        <!-- ========================= -->
+
         <receiver
             android:name=".alarm.AlarmReceiver"
             android:exported="false" />
 
 
-        <!-- Focus Accessibility Service -->
+        <!-- ========================= -->
+        <!-- BOOT RECEIVER -->
+        <!-- ========================= -->
+
+        <receiver
+            android:name=".alarm.BootReceiver"
+            android:enabled="true"
+            android:exported="true">
+
+            <intent-filter>
+
+                <action
+                    android:name="android.intent.action.BOOT_COMPLETED" />
+
+            </intent-filter>
+
+        </receiver>
+
+
+        <!-- ========================= -->
+        <!-- FOCUS ACCESSIBILITY SERVICE -->
+        <!-- ========================= -->
+
         <service
             android:name=".service.FocusAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
